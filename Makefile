@@ -11,4 +11,5 @@ all : $(EXEC)
 $(EXEC) : $(OBJ)
 	$(CC) -o $@  $^
 
-	
+clean : 
+	rm -rf *.o
