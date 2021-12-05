@@ -5,6 +5,7 @@
 #include <semaphore.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <inttypes.h>
 
 #define BufferSize 8
 #define MaxItems 1024
@@ -12,20 +13,24 @@
 int in = 0; //index du item qui sort du buffer
 int out = 0; // index du item qui rentre dans le buffer
 sem_t empty;
-semt_t full;
-int buffer[BufferSize]
+sem_t full;
+int buffer[BufferSize];
 pthread_mutex_t mutex;
+
+void *producer(void *p_no);
+void *consumer(void *c_no);
+int process(int item);
 
 void *producer(void *p_no)
 {
     int item;
-    while(int i = 0; i < MaxItems; i++)
+    for(int i = 0; i < MaxItems; i++)
     {
         item = process(item);
         sem_wait(&empty); //attente d'une place libre
         pthread_mutex_lock(&mutex);
         buffer[in] = item; //place l'item dans le buffer à l'index 'in'
-        printf("Producteur %d a inseré item à l'emplacement %d\n", (int *)pno, buffer[in], in);
+        printf("Producteur %d a inseré item %d à l'emplacement %d\n", *((int *)p_no), buffer[in], in);
         in = (in+1) % BufferSize; //Modulus for pour répartition uniforme des valeurs, comme en hashing
         pthread_mutex_unlock(&mutex); //fin de la section critique
         sem_post(&full);
@@ -49,7 +54,8 @@ void *consumer(void *c_no)
 /***
  *  simulation de traitement de ressource CPU entre chaque conso. et product.
 **/
-int process(int item){
+int process(int item)
+{
     while(rand() > RAND_MAX/10000){
         continue;
     }
@@ -57,18 +63,18 @@ int process(int item){
 }
 int main(int argc, char* argv[])
 {
-    int pro_n;
+    uint pro_n;
     int con_n;
     if(argc < 5){
         // autre poss. : lance le programme avec des valeurs par defaut
         printf("Arguments inssufisants. Veuillez préciser un nombre de producteurs et un nombre de consommateurs.\n ./prod_cons -p <producteurs> -c <consommateurs>");
     }
-    else if((argv[1]!="-p") || !(argv[2].isdigit()) || (argv[3]!="-c") || !(argv[4].isdigit()) ){
+    else if((argv[1]!="-p") || !isdigit(argv[2]) || (argv[3]!="-c") || !isdigit(argv[4]) ){
         printf("Erreur dans les arguments. Veuillez préciser un nombre de producteurs et un nombre de consommateurs.\n ./prod_cons -p <producteurs> -c <consommateurs>");
     }
     else{
-        pro_n = argv[2];
-        con_n = argv[4];
+        pro_n = atoi(argv[2]);
+        con_n = atoi(argv[4]);
         printf("Starting program with %d producers and %d consumers...", pro_n, con_n);
     }
 
@@ -78,17 +84,19 @@ int main(int argc, char* argv[])
     sem_init(&full, 0, 0); //buffer vide
 
     for(int i = 0; i < pro_n; i++){
-        pthread_create(&pro[i], NULL, (void *)producer, (void *)i); //creation des threads produteurs
+        void *i_ptr = &i;
+        pthread_create(&pro[i], NULL, (void *)producer, i_ptr); //creation des threads produteurs [Problème de pointeur]
     }
     for(int i = 0; i < con_n; i++){
-        pthread_create(&con[i], NULL, (void *)consumer, (void *)i); //creation des threads consommateurs
+        void *i_ptr = &i;
+        pthread_create(&con[i], NULL, (void *)consumer, i_ptr); //creation des threads consommateurs
     }
 
     //Ajouts des join statements
-    for(int i=0; i < pro_n: i++){
+    for(int i=0; i < pro_n; i++){
         pthread_join(pro[i], NULL);
     }
-    for(int i=0; i < con_n: i++){
+    for(int i=0; i < con_n; i++){
         pthread_join(con[i], NULL);
     }
 
