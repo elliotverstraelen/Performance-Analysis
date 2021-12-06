@@ -26,10 +26,37 @@ void process(void){
 void *reader(void *rd_n){
     int runner = 1;
     for(int i=0; i<read_ops; i++){
+        sem_wait(&r_db);
+        pthread_mutex_lock(&r_mutex);
+        readcount++;
+        if(readcount==1)
+        {
+            //arrivée du premier writer
+            sem_wait(&w_db);
+        }
+        pthread_mutex_unlock(&r_mutex);
+        sem_post(&r_db);
+
+        process();
+
+        pthread_mutex_lock(&r_mutex);
+        readcount--;
+        if(readcount == 0)
+        {
+            sem_post(&w_db);
+        }
+        pthread_mutex_unlock(&r_mutex);
+    }
+    return NULL;
+}
+
+void *writer(void *wr_n){
+    int runner = 1;
+    for(int i=0; i<write_ops; i++){
         pthread_mutex_lock(&w_mutex);
         //section critique
-        readcount++;
-        if(readcount==1){
+        writecount++;
+        if(writecount==1){
             //arrivée du premier reader
             sem_wait(&r_db);
         }
@@ -42,8 +69,8 @@ void *reader(void *rd_n){
         pthread_mutex_lock(&w_mutex);
         
         //section critique
-        readcount--;
-        if(readcount==0){
+        writecount--;
+        if(writecount==0){
             //départ du dernier reader
             sem_post(&r_db);
         }
@@ -51,33 +78,43 @@ void *reader(void *rd_n){
     }
     return NULL;
 }
-void *writer(void *wr_n){
-    //TODO
-}
 
 int main(int argc, char* argv[])
 {
-    //Il faudrait recoder le parseur d'arguments pour que l'ordre des arguments n'aient pas d'importance
     int rd_n, wr_n;
-    if(argc < 5)
+
+    if(argc != 3)
     {
-        // autre poss. : lance le programme avec des valeurs par defaut
         printf("Arguments inssufisants. Veuillez préciser un nombre de readers et writers.\n ./reader_writer -r <readers> -w <writers>");
+        return EXIT_FAILURE;
     }
-    else if(argv[1]!="-r" || !isdigit(argv[2]) || argv[3]!="-w" || !isdigit(argv[4]))
+    int arg_read = sscanf(argv[1], "%d", &rd_n);
+    int arg_write = sscanf(argv[2], "%d", &wr_n);
+    if(arg_read != 1)
     {
-        printf("Erreur dans les arguments. Veuillez préciser un nombre de readers et writers.\n ./reader_writer -r <readers> -w <writers>");
+        printf("Erreur dans les arguments. %s n'est pas un nombre de reader valide", argv[1]);
     }
-    else
+    if(arg_write !=1)
     {
-        rd_n = atoi(argv[2]);
-        wr_n = atoi(argv[4]);
-        printf("Starting program with %d readers and %d writers...", rd_n, wr_n);
+        printf("Erreur dans les arguments. %s n'est pas un nombre de writer valide.", argv[1]);
     }
-    pthread_mutex_init(&r_mutex, NULL);
-    pthread_mutex_init(&w_mutex, NULL); //Initialisation des mutex
-    sem_init(&r_db, 0, 1);
-    sem_init(&w_db, 0, 1);
+
+    printf("le programme démarre avec %d readers et %d writers\n", rd_n, wr_n);
+
+    //Initialisation des mutex
+    if(pthread_mutex_init(&r_mutex, NULL) !=0){
+        printf("Error creating reading mutex");
+    }
+    if(pthread_mutex_init(&w_mutex, NULL) !=0){
+        printf("Error creating writer mutex");
+    }
+    //Initialisation des semaphores
+    if(sem_init(&r_db, 0, 1) !=0){
+        printf("Error creating reading semaphore");
+    }
+    if(sem_init(&w_db, 0, 1) !=0){
+        printf("Error creating writing semaphore");
+    }
 
     void *vp;
     //creation des threads readers et writers
