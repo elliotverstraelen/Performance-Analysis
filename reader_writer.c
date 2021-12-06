@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
     }
     if(arg_write !=1)
     {
-        printf("Erreur dans les arguments. %s n'est pas un nombre de writer valide.", argv[1]);
+        printf("Erreur dans les arguments. %s n'est pas un nombre de writer valide.", argv[2]);
     }
 
     printf("le programme démarre avec %d readers et %d writers\n", rd_n, wr_n);

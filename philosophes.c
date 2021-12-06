@@ -56,20 +56,17 @@ void mange()
 int main(int argc, char *argv[])
 {
     int nb_philosophes;
-    if(argc < 3){
-        // autre poss. : lance le programme avec des valeurs par defaut
-        printf("Arguments inssufisants. Veuillez préciser un nombre de readers et writers.\n ./reader_writer -r <readers> -w <writers>");
+    if(argc != 2)
+    {
+        printf("Nobre d'arguments incorrecte. Veuillez préciser un nombre de philosophes.\n ./philosophes <quantité>");
+        return EXIT_FAILURE;
     }
-    else if((argv[1]!="-p") || !isdigit(argv[2]) || (argv[1]!="--philosophes")){
-        printf("Erreur dans les arguments. Veuillez préciser un nombre de readers et writers.\n ./reader_writer -r <readers> -w <writers>");
+    int arg_philo = sscanf(argv[1], "%d", &nb_philosophes);
+    if(arg_philo != 1)
+    {
+        printf("Erreur dans les arguments. %s n'est pas un nombre de producteur valide", argv[1]);
     }
-    else{
-        nb_philosophes = atoi(argv[2]);
-        if(nb_philosophes < 1) return EXIT_FAILURE;
-        if(nb_philosophes == 1) return EXIT_SUCCESS;
-        printf("Starting program with %d philosophers...", nb_philosophes);
-    }
-
+    printf("le programme démarre avec %d philosophes\n", nb_philosophes);
     
     philosophe_t phil[nb_philosophes];
     pthread_t threads[nb_philosophes];
@@ -77,19 +74,29 @@ int main(int argc, char *argv[])
     //initiation des identifiants et des sémaphores des baguettes
     for(int i=0; i<nb_philosophes; i++){
         phil[i].is_pair = i%2==0;
-        pthread_mutex_init(&phil[i].right, NULL);
+        if(pthread_mutex_init(&phil[i].right, NULL) != 0)
+        {
+            printf("Erreur d'initiation du mutex");
+        }
         phil[(i+1) % nb_philosophes].left = &phil[i].right; //valeur initié à 1 car exclusion mutuelle (comme mutex)
     }
-
     for(int i=0; i<nb_philosophes; i++){
-        pthread_create(&threads[i], NULL, philosophe, (void *)&phil[i]); //init. des thread avec fonction philosophe et argument id
-    }
-
-    for(int i=0; i<nb_philosophes; i++){
-        pthread_join(threads[i], NULL);
+        if(pthread_create(&threads[i], NULL, philosophe, (void *)&phil[i]) != 0)
+        {
+            printf("Erreur d'initiation du du thread");
+        }
     }
     for(int i=0; i<nb_philosophes; i++){
-        pthread_mutex_destroy(&phil[i].right);
+        if(pthread_join(threads[i], NULL) != 0)
+        {
+            printf("Erreur de pthread_join()");
+        }
+    }
+    for(int i=0; i<nb_philosophes; i++){
+        if(pthread_mutex_destroy(&phil[i].right) != 0)
+        {
+            printf("Erreur de mutex_destroy()");
+        }
     }
     exit(EXIT_SUCCESS);
 }
