@@ -22,19 +22,19 @@ sem_t full;
 int buffer[BufferSize];
 pthread_mutex_t mutex;
 
+void *producer(void *p_no);
+void *consumer(void *c_no);
+int process(int item);
+
 /***
  *  simulation de traitement de ressource CPU entre chaque conso. et product.
 **/
 int process(int item){
-    while(rand() > RAND_MAX/10000){
-        continue;
-    }
+    while(rand() > RAND_MAX/10000);
     return item;
 }
 
-void *producer(void *p_no);
-void *consumer(void *c_no);
-int process(int item);
+
 
 
 void *producer(void *p_no)
@@ -71,7 +71,7 @@ void *consumer(void *c_no)
 
 int main(int argc, char* argv[])
 {
-    uint pro_n;
+    int pro_n;
     int con_n;
     if(argc < 5){
         // autre poss. : lance le programme avec des valeurs par defaut
@@ -81,8 +81,8 @@ int main(int argc, char* argv[])
         printf("Erreur dans les arguments. Veuillez préciser un nombre de producteurs et un nombre de consommateurs.\n ./prod_cons -p <producteurs> -c <consommateurs>");
     }
     else{
-        pro_n = (int) argv[2];
-        con_n = (int) argv[4];
+        pro_n = atoi(argv[2]) ;
+        con_n = atoi(argv[4]);
 
         printf("Starting program with %d producers and %d consumers...", pro_n, con_n);
     }
