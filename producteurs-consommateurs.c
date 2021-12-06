@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdbool.h>
+#include <inttypes.h>
 
 #define BufferSize 8
 #define MaxItems 1024
@@ -30,6 +31,11 @@ int process(int item){
     }
     return item;
 }
+
+void *producer(void *p_no);
+void *consumer(void *c_no);
+int process(int item);
+
 
 void *producer(void *p_no)
 {
@@ -63,34 +69,21 @@ void *consumer(void *c_no)
     return NULL;
 }
 
-bool isNumber(char number[])
-{
-    int i = 0;
-
-    if (number[0] == '-')
-        i = 1;
-    for (; number[i] != 0; i++)
-    {
-        if (!isdigit(number[i]))
-            return false;
-    }
-    return true;
-}
-
 int main(int argc, char* argv[])
 {
-    int pro_n;
+    uint pro_n;
     int con_n;
     if(argc < 5){
         // autre poss. : lance le programme avec des valeurs par defaut
         printf("Arguments inssufisants. Veuillez préciser un nombre de producteurs et un nombre de consommateurs.\n ./prod_cons -p <producteurs> -c <consommateurs>");
     }
-    else if(!(strncmp( argv[1], "-p", strlen( argv[1] )) == 0) || !(argv[2].isNumber()) || !(strncmp( argv[3], "-c", strlen( argv[3] )) == 0) || !(argv[4].isNumber())){
+    else if(!(strncmp( argv[1], "-p", strlen( argv[1] )) == 0) || !isdigit(argv[2]) || !(strncmp( argv[3], "-c", strlen( argv[3] )) == 0) || !isdigit(argv[4])){
         printf("Erreur dans les arguments. Veuillez préciser un nombre de producteurs et un nombre de consommateurs.\n ./prod_cons -p <producteurs> -c <consommateurs>");
     }
     else{
         pro_n = (int) argv[2];
         con_n = (int) argv[4];
+
         printf("Starting program with %d producers and %d consumers...", pro_n, con_n);
     }
 
@@ -100,10 +93,12 @@ int main(int argc, char* argv[])
     sem_init(&full, 0, 0); //buffer vide
 
     for(int i = 0; i < pro_n; i++){
-        pthread_create(&pro[i], NULL, (void *)producer, (void *) (size_t) i); //creation des threads produteurs
+        void *i_ptr = &i;
+        pthread_create(&pro[i], NULL, (void *)producer, i_ptr); //creation des threads produteurs [Problème de pointeur]
     }
     for(int i = 0; i < con_n; i++){
-        pthread_create(&con[i], NULL, (void *)consumer, (void *) (size_t) i); //creation des threads consommateurs
+        void *i_ptr = &i;
+        pthread_create(&con[i], NULL, (void *)consumer, i_ptr); //creation des threads consommateurs
     }
 
     //Ajouts des join statements

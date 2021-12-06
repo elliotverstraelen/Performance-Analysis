@@ -1,15 +1,12 @@
-CC = gcc
-EXEC = prog
-SRC = $(wildcard *.c)
-OBJ = $(SRC:.c=.o)
+all: philosophes producteurs-consommateurs reader-writer
 
-all : $(EXEC)
+philosophes: philosophes.c
+    gcc -Wall -ansi -pedantic -o philosophes philosophes.c
 
-%.o : %.c
-	$(CC) -o $@ -c $<
+producteurs-consommateurs: producteurs-consommateurs.c
+    gcc -Wall -ansi -pedantic -o producteurs-consommateurs producteurs-consommateurs.c
 
-$(EXEC) : $(OBJ)
-	$(CC) -o $@  $^
+reader-writer: reader-writer.c
+    gcc -Wall -ansi -pedantic -o reader-writer reader-writer.c
 
-clean : 
-	rm -rf *.o
+
