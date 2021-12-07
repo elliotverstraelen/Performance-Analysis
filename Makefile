@@ -1,4 +1,4 @@
-all: philosophes producteurs-consommateurs reader-writer
+all: philosophes producteurs-consommateurs reader-writer clean
 
 philosophes: Part1/philosophes.c
 	gcc Part1/philosophes.c -lpthread -o philosophes 
@@ -10,4 +10,4 @@ reader-writer: Part1/reader_writer.c
 	gcc Part1/reader_writer.c -o rw -lpthread -ansi -std=c99
 
 clean:
-	rm -f prog *.o
+	rm -f  *.o
