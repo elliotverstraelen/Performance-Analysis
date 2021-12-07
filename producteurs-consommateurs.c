@@ -73,19 +73,23 @@ int main(int argc, char* argv[])
 {
     int pro_n;
     int con_n;
-    if(argc < 5){
-        // autre poss. : lance le programme avec des valeurs par defaut
-        printf("Arguments inssufisants. Veuillez préciser un nombre de producteurs et un nombre de consommateurs.\n ./prod_cons -p <producteurs> -c <consommateurs>");
+    if(argc != 3)
+    {
+        printf("Arguments inssufisants. Veuillez préciser un nombre de readers et writers.\n ./prod_cons <Producers> <Consumers>");
+        return EXIT_FAILURE;
     }
-    else if(!(strncmp( argv[1], "-p", strlen( argv[1] )) == 0) || !isdigit(argv[2]) || !(strncmp( argv[3], "-c", strlen( argv[3] )) == 0) || !isdigit(argv[4])){
-        printf("Erreur dans les arguments. Veuillez préciser un nombre de producteurs et un nombre de consommateurs.\n ./prod_cons -p <producteurs> -c <consommateurs>");
+    int arg_pro = sscanf(argv[1], "%d", &pro_n);
+    int arg_con = sscanf(argv[2], "%d", &con_n);
+    if(arg_pro != 1)
+    {
+        printf("Erreur dans les arguments. %s n'est pas un nombre de producteur valide", argv[1]);
     }
-    else{
-        pro_n = atoi(argv[2]) ;
-        con_n = atoi(argv[4]);
+    if(arg_con != 1)
+    {
+        printf("Erreur dans les arguments. %s n'est pas un nombre de consommateur valide.", argv[2]);
+    }
 
-        printf("Starting program with %d producers and %d consumers...", pro_n, con_n);
-    }
+    printf("le programme démarre avec %d producteurs et %d consommateurs\n", pro_n, con_n);
 
     pthread_t pro[pro_n], con[con_n];
     pthread_mutex_init(&mutex, NULL);

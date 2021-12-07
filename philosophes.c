@@ -2,31 +2,29 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <errno.h>
-#include<semaphore.h>
 #include <string.h>
-
-
-void * philosophe(void *);
-void mange(int);
-void error(int, char *);
-void prend_baguettes(int id);
-void relache_baguettes(int id);
+#include <ctype.h>
 
 typedef struct philosophe{
     int is_pair;
-    pthread_mutex_t *right;
-    pthread_mutex_t left;
+    pthread_mutex_t *left;
+    pthread_mutex_t right;
 } philosophe_t;
+
+int main(int argc, char *argv[]);
+void * philosophe(void * arg);
+void mange();
+void prend_baguettes(philosophe_t *id);
+void relache_baguettes(philosophe_t *id);
+
 
 void *philosophe (void* arg)
 {
     philosophe_t *id = (philosophe_t *) arg;
-    printf("\n le philosophe %d pense", *id);
     for(int i=0; i<100000; i++){
-        prend_baguettes(*id);
-        mange(*id);
-        relache_baguettes(*id);
+        prend_baguettes(id);
+        mange(id);
+        relache_baguettes(id);
     }
     
 
@@ -47,7 +45,7 @@ void prend_baguettes(philosophe_t *id){
 void relache_baguettes(philosophe_t *id)
 {
     pthread_mutex_unlock(id->left); //relache la baguette de gauche
-    pthread_mutex_unlock(&p->right); // relache la baguette de droite
+    pthread_mutex_unlock(&id->right); // relache la baguette de droite
 }
 
 void mange()
@@ -55,49 +53,50 @@ void mange()
     return;
 }
 
-void error(int err, char *msg)
-{
-    pfrintf(stderr, "%s a retourné %d message d'erreur: %s\n", msg, err, strerror(errno));
-    exit(EXIT_FAILURE);
-}
-
 int main(int argc, char *argv[])
 {
     int nb_philosophes;
-    if(argc < 3){
-        // autre poss. : lance le programme avec des valeurs par defaut
-        printf("Arguments inssufisants. Veuillez préciser un nombre de readers et writers.\n ./reader_writer -r <readers> -w <writers>");
+    if(argc != 2)
+    {
+        printf("Nobre d'arguments incorrecte. Veuillez préciser un nombre de philosophes.\n ./philosophes <quantité>");
+        return EXIT_FAILURE;
     }
-    else if((argv[1]!="-p") || !(argv[2].isdigit()) || (argv[1]!="--philosophes")){
-        printf("Erreur dans les arguments. Veuillez préciser un nombre de readers et writers.\n ./reader_writer -r <readers> -w <writers>");
+    int arg_philo = sscanf(argv[1], "%d", &nb_philosophes);
+    if(arg_philo != 1)
+    {
+        printf("Erreur dans les arguments. %s n'est pas un nombre de producteur valide", argv[1]);
     }
-    else{
-        nb_philosophes = atoi(argv[2]);
-        if(nb_philosophes < 1) return EXIT_FAILURE;
-        if(philosophe == 1) return EXIT_SUCCES;
-        printf("Starting program with %d philosophers...", nb_philosophes);
-    }
-
+    printf("le programme démarre avec %d philosophes\n", nb_philosophes);
     
-    philosophes_t phil[nb_philosophes];
+    philosophe_t phil[nb_philosophes];
     pthread_t threads[nb_philosophes];
 
     //initiation des identifiants et des sémaphores des baguettes
     for(int i=0; i<nb_philosophes; i++){
         phil[i].is_pair = i%2==0;
-        pthread_mutex_init(&phil[i].right, NULL);
+        if(pthread_mutex_init(&phil[i].right, NULL) != 0)
+        {
+            printf("Erreur d'initiation du mutex");
+        }
         phil[(i+1) % nb_philosophes].left = &phil[i].right; //valeur initié à 1 car exclusion mutuelle (comme mutex)
     }
-
     for(int i=0; i<nb_philosophes; i++){
-        pthread_create(&threads[i], NULL, philosophe, (void *)&phil[i]); //init. des thread avec fonction philosophe et argument id
-    }
-
-    for(int i=0; i<nb_philosophes; i++){
-        pthread_join(threads[i], NULL);
+        if(pthread_create(&threads[i], NULL, philosophe, (void *)&phil[i]) != 0)
+        {
+            printf("Erreur d'initiation du du thread");
+        }
     }
     for(int i=0; i<nb_philosophes; i++){
-        pthread_mutexattr_destroy(&phil[i].right);
+        if(pthread_join(threads[i], NULL) != 0)
+        {
+            printf("Erreur de pthread_join()");
+        }
+    }
+    for(int i=0; i<nb_philosophes; i++){
+        if(pthread_mutex_destroy(&phil[i].right) != 0)
+        {
+            printf("Erreur de mutex_destroy()");
+        }
     }
     exit(EXIT_SUCCESS);
 }
