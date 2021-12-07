@@ -46,7 +46,6 @@ void *producer(void *p_no)
         sem_wait(&empty); //attente d'une place libre
         pthread_mutex_lock(&mutex);
         buffer[in] = item; //place l'item dans le buffer à l'index 'in'
-        printf("Producteur %p a inseré l'item %d à l'emplacement %d\n", (int *)p_no, buffer[in], in);
         in = (in+1) % BufferSize; //Modulo pour répartition uniforme des valeurs, comme en hashing
         pthread_mutex_unlock(&mutex); //fin de la section critique
         sem_post(&full);
@@ -61,7 +60,6 @@ void *consumer(void *c_no)
         sem_wait(&full);
         pthread_mutex_lock(&mutex);
         int item = buffer[out]; //get the item to consume from the buffer
-        printf("Consommateur %d a retiré l'item %d de lemplacement %d\n", *((int *)c_no), item, out);
         item = process(item); // on aurait pu faire une fonction void enfaite
         out = (out+1)%BufferSize; //Modulo pour répartition uniforme des valeurs, comme en hashing
         pthread_mutex_unlock(&mutex); //fin de la section critique
@@ -91,7 +89,7 @@ int main(int argc, char* argv[])
         printf("Erreur dans les arguments. %s n'est pas un nombre de consommateur valide.", argv[2]);
     }
 
-    printf("le programme démarre avec %d producteurs et %d consommateurs\n", pro_n, con_n);
+    //printf("le programme démarre avec %d producteurs et %d consommateurs\n", pro_n, con_n);
 
     pthread_t pro[pro_n], con[con_n];
     pthread_mutex_init(&mutex, NULL);

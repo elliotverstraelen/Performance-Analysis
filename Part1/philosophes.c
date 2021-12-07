@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
     {
         printf("Erreur dans les arguments. %s n'est pas un nombre de producteur valide", argv[1]);
     }
-    printf("le programme démarre avec %d philosophes\n", nb_philosophes);
+    //printf("le programme démarre avec %d philosophes\n", nb_philosophes);
     
     philosophe_t phil[nb_philosophes];
     pthread_t threads[nb_philosophes];

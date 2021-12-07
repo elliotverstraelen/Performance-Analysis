@@ -90,7 +90,7 @@ int main(int argc, char* argv[])
         printf("Erreur dans les arguments. %s n'est pas un nombre de writer valide.", argv[2]);
     }
 
-    printf("le programme démarre avec %d readers et %d writers\n", rd_n, wr_n);
+    //printf("le programme démarre avec %d readers et %d writers\n", rd_n, wr_n);
     //Initialisation des mutex
     if(pthread_mutex_init(&r_mutex, NULL) !=0){
         printf("Error creating reading mutex");
