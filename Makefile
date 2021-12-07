@@ -1,26 +1,13 @@
 all: philosophes producteurs-consommateurs reader-writer
 
-philosophes: philosophes.c
-<<<<<<< HEAD
-    gcc -Wall -ansi -pedantic -o philosophes Part1/philosophes.c
+philosophes: Part1/philosophes.c
+	gcc Part1/philosophes.c -lpthread -o philosophes 
 
-producteurs-consommateurs: producteurs-consommateurs.c
-    gcc -Wall -ansi -pedantic -o prod_consmateurs Part1/producteurs-consommateurs.c
+producteurs-consommateurs: Part1/producteurs-consommateurs.c
+	gcc Part1/producteurs-consommateurs.c  -o pro_con -lpthread -ansi -std=c99
 
-reader-writer: reader-writer.c
-    gcc -Wall -ansi -pedantic -o reader-writer Part1/reader-writer.c
+reader-writer: Part1/reader_writer.c
+	gcc Part1/reader_writer.c -o rw -lpthread -ansi -std=c99
 
 clean:
-    rm -f prog *.o
-=======
-	gcc -Wall -ansi -pedantic -o philosophes philosophes.c
-
-producteurs-consommateurs: producteurs-consommateurs.c
-	gcc -Wall -ansi -pedantic -o producteurs-consommateurs producteurs-consommateurs.c
-
-reader-writer: reader-writer.c
-	gcc -Wall -ansi -pedantic -o reader-writer reader-writer.c
-
-clean: 
-	rm -f reader-writer producteurs-consommateurs philosophes
->>>>>>> b9005f1289b03511df537181009c55c6764b5922
+	rm -f prog *.o

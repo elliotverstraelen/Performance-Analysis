@@ -21,13 +21,12 @@ void relache_baguettes(philosophe_t *id);
 void *philosophe (void* arg)
 {
     philosophe_t *id = (philosophe_t *) arg;
-    for(int i=0; i<100000; i++){
+    int i;
+    for(i=0; i<100000; i++){
         prend_baguettes(id);
         mange(id);
         relache_baguettes(id);
     }
-    
-
 }
 void prend_baguettes(philosophe_t *id){
     //solution assymétrique pour éviter le deadlock
@@ -61,7 +60,8 @@ int main(int argc, char *argv[])
         printf("Nobre d'arguments incorrecte. Veuillez préciser un nombre de philosophes.\n ./philosophes <quantité>");
         return EXIT_FAILURE;
     }
-    int arg_philo = sscanf(argv[1], "%d", &nb_philosophes);
+    int arg_philo;
+    arg_philo = sscanf(argv[1], "%d", &nb_philosophes);
     if(arg_philo != 1)
     {
         printf("Erreur dans les arguments. %s n'est pas un nombre de producteur valide", argv[1]);
